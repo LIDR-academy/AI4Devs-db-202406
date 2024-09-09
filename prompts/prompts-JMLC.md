@@ -1143,3 +1143,102 @@ De acuerdo. Actualiza el esquema de @schema.prisma  según el ERD final y los í
 
 # Prompt 13:
 Puedes aplicar alguna nomenclatura a los índices? por ejemplo idx_nombre-de-la-tabla_misión-del-indice?
+
+# Prompt 14: Petición de datos de ejemplo
+
+Podrías generar algunos datos de ejemplo para rellenar la base de datos?
+Genera los datos para:
+2 candidatos con 2 o 3 experiencias y 1 o 2 estudios. Uno con Resume y otro sin.
+3 ofertas aleatorias de 2 empresas distintas. 
+1 empleado por empresa
+1 candidato aplicará a 2 ofertas y el otro a ninguna
+
+Genera en formato SQL para insertarlo directamente en base de datos.
+Ten en cuenta el órden de las sentencias para prevenir errores de Foreign Key.
+Ten en cuenta que la base de datos está vacía para incluir todos los datos de tablas relacionadas como Location.
+
+## Respuesta
+Claro, voy a generar datos de ejemplo en formato SQL para rellenar la base de datos según tus especificaciones. Tendré en cuenta el orden de las sentencias para prevenir errores de Foreign Key y asumiré que la base de datos está vacía.
+
+```sql
+-- Insertar ubicaciones
+INSERT INTO "Location" (address, city, state, country, "postalCode") VALUES
+('123 Main St', 'New York', 'NY', 'USA', '10001'),
+('456 Elm St', 'Los Angeles', 'CA', 'USA', '90001'),
+('789 Oak St', 'Chicago', 'IL', 'USA', '60601');
+
+-- Insertar empresas
+INSERT INTO "Company" (name) VALUES
+('Tech Innovators Inc.'),
+('Global Solutions Corp.');
+
+-- Insertar empleados
+INSERT INTO "Employee" ("companyId", "firstName", "lastName", email, role, "isActive") VALUES
+(1, 'John', 'Doe', 'john.doe@techinnovators.com', 'HR Manager', true),
+(2, 'Jane', 'Smith', 'jane.smith@globalsolutions.com', 'Recruiter', true);
+
+-- Insertar candidatos
+INSERT INTO "Candidate" ("firstName", "lastName", email, phone, "locationId") VALUES
+('Alice', 'Johnson', 'alice.johnson@email.com', '1234567890', 1),
+('Bob', 'Williams', 'bob.williams@email.com', '9876543210', 2);
+
+-- Insertar experiencias laborales
+INSERT INTO "WorkExperience" (company, position, description, "startDate", "endDate", "candidateId") VALUES
+('Previous Tech', 'Software Developer', 'Developed web applications', '2018-01-01', '2020-12-31', 1),
+('IT Solutions', 'Senior Developer', 'Led a team of developers', '2021-01-01', NULL, 1),
+('Web Corp', 'Junior Developer', 'Assisted in frontend development', '2019-06-01', '2021-05-31', 2),
+('Data Systems', 'Data Analyst', 'Performed data analysis and visualization', '2021-06-01', NULL, 2);
+
+-- Insertar educación
+INSERT INTO "Education" (institution, title, "startDate", "endDate", "candidateId") VALUES
+('University of Technology', 'Bachelor of Computer Science', '2014-09-01', '2018-05-31', 1),
+('Data Science Institute', 'Master of Data Science', '2018-09-01', '2020-05-31', 1),
+('City College', 'Associate Degree in Web Development', '2017-09-01', '2019-05-31', 2);
+
+-- Insertar resume para Alice Johnson
+INSERT INTO "Resume" ("filePath", "fileType", "uploadDate", "candidateId") VALUES
+('/resumes/alice_johnson_resume.pdf', 'application/pdf', '2023-01-15', 1);
+
+-- Insertar flujos de entrevista
+INSERT INTO "InterviewFlow" (description) VALUES
+('Standard Technical Interview'),
+('Management Position Interview');
+
+-- Insertar tipos de entrevista
+INSERT INTO "InterviewType" (name, description) VALUES
+('Technical', 'Assessing technical skills and knowledge'),
+('Behavioral', 'Evaluating soft skills and cultural fit');
+
+-- Insertar pasos de entrevista
+INSERT INTO "InterviewStep" ("interviewFlowId", "interviewTypeId", name, "orderIndex") VALUES
+(1, 1, 'Technical Screening', 1),
+(1, 2, 'Team Fit Interview', 2),
+(2, 2, 'Leadership Assessment', 1),
+(2, 1, 'Technical Expertise Evaluation', 2);
+
+-- Insertar posiciones
+INSERT INTO "Position" ("companyId", "interviewFlowId", "locationId", title, description, status, "isVisible", "jobDescription", requirements, responsibilities, "salaryMin", "salaryMax", "employmentType", benefits, "companyDescription", "applicationDeadline", "contactInfo") VALUES
+(1, 1, 1, 'Senior Software Engineer', 'Exciting opportunity for a skilled developer', 'OPEN', true, 'We are seeking a talented Senior Software Engineer to join our innovative team.', 'Bachelor''s degree in Computer Science, 5+ years of experience', 'Lead development projects, mentor junior developers', 90000, 130000, 'Full-time', 'Health insurance, 401k, flexible hours', 'Tech Innovators Inc. is a leading software company', '2023-12-31', 'careers@techinnovators.com'),
+(1, 1, 2, 'Frontend Developer', 'Join our UI/UX team', 'OPEN', true, 'Looking for a creative Frontend Developer to enhance our user interfaces.', 'Strong skills in HTML, CSS, and JavaScript', 'Develop responsive web applications, collaborate with designers', 70000, 100000, 'Full-time', 'Health insurance, stock options', 'Tech Innovators Inc. creates cutting-edge software solutions', '2023-11-30', 'careers@techinnovators.com'),
+(2, 2, 3, 'Project Manager', 'Lead our exciting projects', 'OPEN', true, 'Seeking an experienced Project Manager to oversee our key initiatives.', 'PMP certification, 7+ years of experience in tech projects', 'Manage project timelines, budgets, and resources', 100000, 150000, 'Full-time', 'Comprehensive benefits package, bonuses', 'Global Solutions Corp. delivers world-class business solutions', '2023-12-15', 'hr@globalsolutions.com');
+
+-- Insertar aplicaciones para Alice Johnson
+INSERT INTO "Application" ("positionId", "candidateId", "applicationDate", status, notes) VALUES
+(1, 1, '2023-05-01', 'UNDER_REVIEW', 'Strong candidate with relevant experience'),
+(2, 1, '2023-05-15', 'SUBMITTED', 'Interesting profile, to be reviewed');
+
+-- Bob Williams no tiene aplicaciones, así que no se insertan datos para él
+```
+
+
+Este script SQL:
+
+1. Inserta los datos necesarios en el orden correcto para evitar errores de Foreign Key.
+2. Crea 2 candidatos con sus respectivas experiencias laborales y educación.
+3. Añade un resume para Alice Johnson, pero no para Bob Williams.
+4. Crea 3 ofertas aleatorias de 2 empresas distintas.
+5. Inserta 1 empleado por empresa.
+6. Crea aplicaciones para Alice Johnson a 2 ofertas, mientras que Bob Williams no tiene aplicaciones.
+7. Incluye todos los datos necesarios para las tablas relacionadas como Location, InterviewFlow, InterviewType, etc.
+
+Puedes ejecutar este script SQL directamente en tu base de datos PostgreSQL para poblarla con estos datos de ejemplo. Asegúrate de que la base de datos esté vacía antes de ejecutar el script para evitar conflictos con datos existentes.
