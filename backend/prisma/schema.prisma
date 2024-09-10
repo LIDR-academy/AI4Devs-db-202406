@@ -76,6 +76,7 @@ model Employee {
   role       String?  @db.VarChar(50)
   isActive   Boolean  @default(true)
   interviews Interview[]
+  @@index([companyId], name: "idx_employee_companyId")
 }
 
 model Position {
@@ -100,6 +101,8 @@ model Position {
   applicationDeadline DateTime?
   contactInfo       String?         @db.VarChar(255)
   applications      Application[]
+  @@index([companyId], name: "idx_position_companyId")
+  @@index([interviewFlowId], name: "idx_position_interviewFlowId")
 }
 
 model InterviewFlow {
@@ -117,8 +120,8 @@ model InterviewStep {
   interviewType   InterviewType? @relation(fields: [interviewTypeId], references: [id], onDelete: SetNull)
   name            String         @db.VarChar(100)
   orderIndex      Int
-
-  Interview Interview[]
+  interview Interview[]
+  @@index([interviewFlowId], name: "idx_interviewStep_interviewFlowId")
 }
 
 model InterviewType {
@@ -138,6 +141,8 @@ model Application {
   status        String?      @db.VarChar(50)
   notes         String?      @db.Text
   interviews    Interview[]
+  @@index([positionId], name: "idx_application_positionId")
+  @@index([candidateId], name: "idx_application_candidateId")
 }
 
 model Interview {
@@ -152,4 +157,6 @@ model Interview {
   result          String?         @db.VarChar(50)
   score           Int?
   notes           String?         @db.Text
+  @@index([applicationId], name: "idx_interview_applicationId")
+  @@index([employeeId], name: "idx_interview_employeeId")
 }
