@@ -14,16 +14,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Entidades originales
 model Candidate {
   id                Int               @id @default(autoincrement())
-  firstName         String            @db.VarChar(100)
-  lastName          String            @db.VarChar(100)
+  first_name        String            @db.VarChar(100)
+  last_name         String            @db.VarChar(100)
   email             String            @unique @db.VarChar(255)
   phone             String?           @db.VarChar(15)
   address           String?           @db.VarChar(100)
   educations        Education[]
-  workExperiences   WorkExperience[]
+  work_experiences  WorkExperience[]
   resumes           Resume[]
   applications      Application[]
 }
@@ -32,10 +31,10 @@ model Education {
   id            Int       @id @default(autoincrement())
   institution   String    @db.VarChar(100)
   title         String    @db.VarChar(250)
-  startDate     DateTime
-  endDate       DateTime?
-  candidateId   Int
-  candidate     Candidate @relation(fields: [candidateId], references: [id])
+  start_date    DateTime
+  end_date      DateTime?
+  candidate_id  Int
+  candidate     Candidate @relation(fields: [candidate_id], references: [id])
 }
 
 model WorkExperience {
@@ -43,22 +42,20 @@ model WorkExperience {
   company     String    @db.VarChar(100)
   position    String    @db.VarChar(100)
   description String?   @db.VarChar(200)
-  startDate   DateTime
-  endDate     DateTime?
-  candidateId Int       @map("candidateId")
-  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  start_date  DateTime
+  end_date    DateTime?
+  candidate_id Int
+  candidate   Candidate @relation(fields: [candidate_id], references: [id])
 }
 
 model Resume {
   id          Int       @id @default(autoincrement())
-  filePath    String    @db.VarChar(500)
-  fileType    String    @db.VarChar(50)
-  uploadDate  DateTime
-  candidateId Int       @map("candidateId")
-  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  file_path   String    @db.VarChar(500)
+  file_type   String    @db.VarChar(50)
+  upload_date DateTime
+  candidate_id Int
+  candidate   Candidate @relation(fields: [candidate_id], references: [id])
 }
-
-// Nuevas entidades
 
 model Company {
   id       Int       @id @default(autoincrement())
@@ -69,40 +66,40 @@ model Company {
 
 model Employee {
   id         Int      @id @default(autoincrement())
-  companyId  Int      @map("candidateId")
-  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company_id Int
+  company    Company  @relation(fields: [company_id], references: [id], onDelete: Cascade)
   name       String   @db.VarChar(100)
   email      String   @unique @db.VarChar(255)
   role       String?  @db.VarChar(50)
-  isActive   Boolean  @default(true)  @map("isActive")
+  is_active  Boolean  @default(true)
   interviews Interview[]
-  @@index([companyId], name: "idx_employee_companyId")
+  @@index([company_id], name: "idx_employee_company_id")
 }
 
 model Position {
-  id                Int             @id @default(autoincrement())
-  companyId         Int             @map("companyId")
-  interviewFlowId   Int?            @map("interviewFlowId")
-  company           Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  interviewFlow     InterviewFlow?  @relation(fields: [interviewFlowId], references: [id], onDelete: SetNull)
-  title             String          @db.VarChar(255)
-  description       String?         @db.Text
-  status            String          @db.VarChar(50)
-  isVisible         Boolean         @default(true)
-  location          String?         @db.VarChar(255)
-  jobDescription    String?         @db.Text
-  requirements      String?         @db.Text
-  responsibilities  String?         @db.Text
-  salaryMin         Float?
-  salaryMax         Float?
-  employmentType    String?         @db.VarChar(50)
-  benefits          String?         @db.Text
-  companyDescription String?        @db.Text
-  applicationDeadline DateTime?
-  contactInfo       String?         @db.VarChar(255)
-  applications      Application[]
-  @@index([companyId], name: "idx_position_companyId")
-  @@index([interviewFlowId], name: "idx_position_interviewFlowId")
+  id                  Int             @id @default(autoincrement())
+  company_id          Int
+  interview_flow_id   Int?
+  company             Company         @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  interview_flow      InterviewFlow?  @relation(fields: [interview_flow_id], references: [id], onDelete: SetNull)
+  title               String          @db.VarChar(255)
+  description         String?         @db.Text
+  status              String          @db.VarChar(50)
+  is_visible          Boolean         @default(true)
+  location            String?         @db.VarChar(255)
+  job_description     String?         @db.Text
+  requirements        String?         @db.Text
+  responsibilities    String?         @db.Text
+  salary_min          Float?
+  salary_max          Float?
+  employment_type     String?         @db.VarChar(50)
+  benefits            String?         @db.Text
+  company_description String?         @db.Text
+  application_deadline DateTime?
+  contact_info        String?         @db.VarChar(255)
+  applications        Application[]
+  @@index([company_id], name: "idx_position_company_id")
+  @@index([interview_flow_id], name: "idx_position_interview_flow_id")
 }
 
 model InterviewFlow {
@@ -113,15 +110,15 @@ model InterviewFlow {
 }
 
 model InterviewStep {
-  id              Int             @id @default(autoincrement())
-  interviewFlowId Int             @map("interviewFlowId")
-  interviewTypeId Int?            @map("interviewTypeId")
-  interviewFlow   InterviewFlow   @relation(fields: [interviewFlowId], references: [id], onDelete: Cascade)
-  interviewType   InterviewType?  @relation(fields: [interviewTypeId], references: [id], onDelete: SetNull)
-  name            String          @db.VarChar(100)
-  orderIndex      Int
-  interview Interview[]
-  @@index([interviewFlowId], name: "idx_interviewStep_interviewFlowId")
+  id              Int           @id @default(autoincrement())
+  interview_flow_id Int
+  interview_type_id Int?
+  interview_flow   InterviewFlow @relation(fields: [interview_flow_id], references: [id], onDelete: Cascade)
+  interview_type   InterviewType? @relation(fields: [interview_type_id], references: [id], onDelete: SetNull)
+  name            String         @db.VarChar(100)
+  order_index     Int
+  interviews      Interview[]
+  @@index([interview_flow_id], name: "idx_interview_step_interview_flow_id")
 }
 
 model InterviewType {
@@ -132,31 +129,31 @@ model InterviewType {
 }
 
 model Application {
-  id            Int           @id @default(autoincrement())
-  positionId    Int           @map("positionId")
-  candidateId   Int           @map("candidateId")
-  position      Position      @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  candidate     Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  applicationDate DateTime
-  status        String?       @db.VarChar(50)
-  notes         String?       @db.Text
+  id            Int          @id @default(autoincrement())
+  position_id   Int
+  candidate_id  Int
+  position      Position     @relation(fields: [position_id], references: [id], onDelete: Cascade)
+  candidate     Candidate    @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  application_date DateTime
+  status        String?      @db.VarChar(50)
+  notes         String?      @db.Text
   interviews    Interview[]
-  @@index([positionId], name: "idx_application_positionId")
-  @@index([candidateId], name: "idx_application_candidateId")
+  @@index([position_id], name: "idx_application_position_id")
+  @@index([candidate_id], name: "idx_application_candidate_id")
 }
 
 model Interview {
   id              Int             @id @default(autoincrement())
-  applicationId   Int             @map("applicationId")
-  interviewStepId Int             @map("interviewStepId")
-  employeeId      Int?            @map("employeeId")
-  application     Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  interviewStep   InterviewStep   @relation(fields: [interviewStepId], references: [id], onDelete: Cascade)
-  employee        Employee?       @relation(fields: [employeeId], references: [id], onDelete: SetNull)
-  interviewDate   DateTime?
+  application_id  Int
+  interview_step_id Int
+  employee_id     Int?
+  application     Application     @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  interview_step  InterviewStep   @relation(fields: [interview_step_id], references: [id], onDelete: Cascade)
+  employee        Employee?       @relation(fields: [employee_id], references: [id], onDelete: SetNull)
+  interview_date  DateTime?
   result          String?         @db.VarChar(50)
   score           Int?
   notes           String?         @db.Text
-  @@index([applicationId], name: "idx_interview_applicationId")
-  @@index([employeeId], name: "idx_interview_employeeId")
+  @@index([application_id], name: "idx_interview_application_id")
+  @@index([employee_id], name: "idx_interview_employee_id")
 }
