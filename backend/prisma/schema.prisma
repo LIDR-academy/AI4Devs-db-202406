@@ -14,6 +14,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Company {
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(255)
+  employees Employee[]
+  positions Position[]
+}
+
+model Employee {
+  id         Int       @id @default(autoincrement())
+  companyId  Int
+  name       String    @db.VarChar(255)
+  email      String    @db.VarChar(255)
+  role       String    @db.VarChar(255)
+  isActive   Boolean
+  company    Company   @relation(fields: [companyId], references: [id])
+  interviews Interview[]
+
+  @@index([companyId])
+}
+
+model InterviewFlow {
+  id          Int             @id @default(autoincrement())
+  description String
+  positions   Position[]
+  steps       InterviewStep[]
+}
+
+model Position {
+  id                  Int             @id @default(autoincrement())
+  companyId           Int
+  interviewFlowId     Int
+  title               String          @db.VarChar(255)
+  description         String?
+  status              String          @db.VarChar(255)
+  isVisible           Boolean
+  location            String?         @db.VarChar(255)
+  jobDescription      String?
+  requirements        String?
+  responsibilities    String?
+  salaryMin           Float?
+  salaryMax           Float?
+  employmentType      String?         @db.VarChar(255)
+  benefits            String?
+  companyDescription  String?
+  applicationDeadline DateTime?
+  contactInfo         String?         @db.VarChar(255)
+  company             Company         @relation(fields: [companyId], references: [id])
+  interviewFlow       InterviewFlow   @relation(fields: [interviewFlowId], references: [id])
+  applications        Application[]
+
+  @@index([companyId])
+  @@index([interviewFlowId])
+}
+
+model InterviewType {
+  id          Int             @id @default(autoincrement())
+  name        String          @db.VarChar(255)
+  description String?
+  steps       InterviewStep[]
+}
+
+model InterviewStep {
+  id              Int             @id @default(autoincrement())
+  interviewFlowId Int
+  interviewTypeId Int
+  name            String          @db.VarChar(255)
+  orderIndex      Int
+  interviewFlow   InterviewFlow   @relation(fields: [interviewFlowId], references: [id])
+  interviewType   InterviewType   @relation(fields: [interviewTypeId], references: [id])
+  interviews      Interview[]
+
+  @@index([interviewFlowId])
+  @@index([interviewTypeId])
+}
+
 model Candidate {
   id                Int               @id @default(autoincrement())
   firstName         String            @db.VarChar(100)
@@ -24,6 +99,7 @@ model Candidate {
   educations        Education[]
   workExperiences   WorkExperience[]
   resumes           Resume[]
+  applications      Application[]
 }
 
 model Education {
@@ -34,6 +110,8 @@ model Education {
   endDate       DateTime?
   candidateId   Int
   candidate     Candidate @relation(fields: [candidateId], references: [id])
+
+  @@index([candidateId])
 }
 
 model WorkExperience {
@@ -45,6 +123,8 @@ model WorkExperience {
   endDate     DateTime?
   candidateId Int
   candidate   Candidate @relation(fields: [candidateId], references: [id])
+
+  @@index([candidateId])
 }
 
 model Resume {
@@ -54,4 +134,39 @@ model Resume {
   uploadDate  DateTime
   candidateId Int
   candidate   Candidate @relation(fields: [candidateId], references: [id])
+
+  @@index([candidateId])
+}
+
+model Application {
+  id          Int         @id @default(autoincrement())
+  positionId  Int
+  candidateId Int
+  applicationDate DateTime
+  status      String      @db.VarChar(255)
+  notes       String?
+  position    Position    @relation(fields: [positionId], references: [id])
+  candidate   Candidate   @relation(fields: [candidateId], references: [id])
+  interviews  Interview[]
+
+  @@index([positionId])
+  @@index([candidateId])
+}
+
+model Interview {
+  id              Int             @id @default(autoincrement())
+  applicationId   Int
+  interviewStepId Int
+  employeeId      Int
+  interviewDate   DateTime
+  result          String?         @db.VarChar(255)
+  score           Int?
+  notes           String?
+  application     Application     @relation(fields: [applicationId], references: [id])
+  interviewStep   InterviewStep   @relation(fields: [interviewStepId], references: [id])
+  employee        Employee        @relation(fields: [employeeId], references: [id])
+
+  @@index([applicationId])
+  @@index([interviewStepId])
+  @@index([employeeId])
 }
