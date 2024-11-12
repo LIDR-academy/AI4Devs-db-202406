@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// schema.prisma
 
 generator client {
   provider      = "prisma-client-js"
@@ -12,6 +8,18 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum PositionStatus {
+  OPEN
+  CLOSED
+  PENDING
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
 }
 
 model Candidate {
@@ -24,6 +32,7 @@ model Candidate {
   educations        Education[]
   workExperiences   WorkExperience[]
   resumes           Resume[]
+  applications      Application[]     // Relation to applications submitted by candidates
 }
 
 model Education {
@@ -54,4 +63,105 @@ model Resume {
   uploadDate  DateTime
   candidateId Int
   candidate   Candidate @relation(fields: [candidateId], references: [id])
+}
+
+model Company {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  employees   Employee[]
+  positions   Position[]
+}
+
+model Employee {
+  id          Int        @id @default(autoincrement())
+  companyId   Int
+  name        String     @db.VarChar(100)
+  email       String     @unique @db.VarChar(255)
+  role        String     @db.VarChar(50)
+  isActive    Boolean    @default(true)
+  isDeleted   Boolean    @default(false)  // Soft delete flag
+  interviews  Interview[]
+  company     Company    @relation(fields: [companyId], references: [id])
+}
+
+model Position {
+  id                  Int               @id @default(autoincrement())
+  companyId           Int
+  interviewFlowId     Int?
+  title               String            @db.VarChar(100)
+  description         String            @db.Text
+  status              PositionStatus
+  isVisible           Boolean           @default(true)
+  location            String            @db.VarChar(100)
+  salaryMin           Decimal           @db.Numeric(10, 2)
+  salaryMax           Decimal           @db.Numeric(10, 2)
+  employmentType      EmploymentType
+  currency            String            @default("USD") @db.VarChar(3)
+  isDeleted           Boolean           @default(false)  // Soft delete flag
+  applications        Application[]
+  interviewFlow       InterviewFlow?    @relation(fields: [interviewFlowId], references: [id])
+  company             Company           @relation(fields: [companyId], references: [id])
+  positionDetails     PositionDetails?  // 1-to-1 normalized details
+}
+
+model PositionDetails {
+  id                  Int               @id @default(autoincrement())
+  positionId          Int               @unique
+  jobDescription      String            @db.Text
+  requirements        String            @db.Text
+  responsibilities    String            @db.Text
+  benefits            String            @db.Text
+  companyDescription  String            @db.Text
+  position            Position          @relation(fields: [positionId], references: [id])
+}
+
+model InterviewFlow {
+  id              Int               @id @default(autoincrement())
+  description     String            @db.Text
+  interviewSteps  InterviewStep[]
+}
+
+model InterviewStep {
+  id              Int               @id @default(autoincrement())
+  interviewFlowId Int
+  interviewTypeId Int
+  name            String            @db.VarChar(100)
+  orderIndex      Int
+  interviewType   InterviewType     @relation(fields: [interviewTypeId], references: [id])
+  interviewFlow   InterviewFlow     @relation(fields: [interviewFlowId], references: [id])
+  interviews      Interview[]
+}
+
+model InterviewType {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(50)
+  description     String            @db.Text
+  interviewSteps  InterviewStep[]
+}
+
+model Application {
+  id              Int               @id @default(autoincrement())
+  positionId      Int
+  candidateId     Int
+  applicationDate DateTime
+  status          String            @default("submitted") @db.VarChar(50)
+  notes           String?           @db.Text
+  interviews      Interview[]
+  candidate       Candidate         @relation(fields: [candidateId], references: [id])
+  position        Position          @relation(fields: [positionId], references: [id])
+}
+
+model Interview {
+  id              Int               @id @default(autoincrement())
+  applicationId   Int
+  interviewStepId Int
+  employeeId      Int
+  interviewDate   DateTime
+  result          String            @db.VarChar(50)
+  score           Int
+  notes           String?           @db.Text
+  feedback        String?           @db.Text
+  application     Application       @relation(fields: [applicationId], references: [id])
+  interviewStep   InterviewStep     @relation(fields: [interviewStepId], references: [id])
+  employee        Employee          @relation(fields: [employeeId], references: [id])
 }
